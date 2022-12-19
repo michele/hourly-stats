@@ -149,3 +149,24 @@ func (h *hourly) stats() *Report {
 		keys:          keys,
 	}
 }
+
+func (s *Stats) Dump() ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(s)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func NewStatsFromDump(bts []byte) (*Stats, error) {
+	buf := bytes.NewBuffer(bts)
+	dec := gob.NewDecoder(buf)
+	var s Stats
+	err := dec.Decode(&s)
+	if err != nil {
+		return nil, err
+	}
+	return &s, nil
+}
