@@ -16,12 +16,12 @@ type Stats struct {
 }
 
 type bucket struct {
-	data map[string]*hourly
+	Data map[string]*hourly
 	lock *sync.Mutex
 }
 
 type hourly struct {
-	data map[string]int
+	Data map[string]int
 	lock *sync.Mutex
 }
 
@@ -34,36 +34,36 @@ func NewStats() *Stats {
 
 func newBucket() *bucket {
 	return &bucket{
-		data: map[string]*hourly{},
+		Data: map[string]*hourly{},
 		lock: &sync.Mutex{},
 	}
 }
 
 func newHourly() *hourly {
 	return &hourly{
-		data: map[string]int{},
+		Data: map[string]int{},
 		lock: &sync.Mutex{},
 	}
 }
 
 func (h *hourly) Incr(hour string) {
 	h.lock.Lock()
-	t, ok := h.data[hour]
+	t, ok := h.Data[hour]
 	if !ok {
 		t = 0
 	}
-	h.data[hour] = t + 1
+	h.Data[hour] = t + 1
 	h.lock.Unlock()
 }
 
 func (b *bucket) Incr(ref string, hour string) {
 	b.lock.Lock()
-	h, ok := b.data[ref]
+	h, ok := b.Data[ref]
 	if !ok {
 		h = newHourly()
 	}
 	h.Incr(hour)
-	b.data[ref] = h
+	b.Data[ref] = h
 	b.lock.Unlock()
 }
 
@@ -112,7 +112,7 @@ func (b *bucket) stats() *Report {
 	hkeys := map[string]bool{}
 	subs := map[string]*Report{}
 	lastDay := make([]int, 24)
-	for k, v := range b.data {
+	for k, v := range b.Data {
 		r := v.stats()
 		total += r.Total
 		for h, _ := range r.keys {
@@ -139,7 +139,7 @@ func (h *hourly) stats() *Report {
 	hoursN := map[int]int{}
 	keys := map[string]bool{}
 	lastDay := make([]int, 24)
-	for k, v := range h.data {
+	for k, v := range h.Data {
 		total += v
 		t, err := time.Parse(hourlyBucketFormat, k)
 		if err != nil {
@@ -159,7 +159,7 @@ func (h *hourly) stats() *Report {
 	}
 	return &Report{
 		Total:         total,
-		Average:       float64(total) / float64(len(h.data)),
+		Average:       float64(total) / float64(len(h.Data)),
 		HourlyAverage: havg,
 		LastDay:       lastDay,
 		keys:          keys,
