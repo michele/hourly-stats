@@ -33,13 +33,20 @@ func New(host, port string, tkn string, d *hstats.DB) (*Server, error) {
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(60 * time.Second))
-	r.Use(auth(tkn))
 
-	r.Post("/stats/{bucket:[a-z0-9-_]+}/{key:[a-z0-9-_]+}", s.postStat)
-	r.Get("/stats/{bucket:[a-z0-9-_]+}", s.getReport)
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.Recoverer)
+		r.Use(middleware.Timeout(60 * time.Second))
+		r.Use(auth(tkn))
+		r.Post("/stats/{bucket:[a-z0-9-_]+}/{key:[a-z0-9-_]+}", s.postStat)
+	})
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.Logger)
+		r.Use(middleware.Recoverer)
+		r.Use(middleware.Timeout(60 * time.Second))
+		r.Use(auth(tkn))
+		r.Get("/stats/{bucket:[a-z0-9-_]+}", s.getReport)
+	})
 	s.r = r
 	s.srv = &http.Server{
 		Addr:    fmt.Sprintf("%s:%s", s.host, s.port),
