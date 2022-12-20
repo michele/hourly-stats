@@ -47,6 +47,9 @@ func newHourly() *hourly {
 }
 
 func (h *hourly) Incr(hour string) {
+	if h.lock == nil {
+		h.lock = &sync.Mutex{}
+	}
 	h.lock.Lock()
 	t, ok := h.Data[hour]
 	if !ok {
@@ -57,6 +60,9 @@ func (h *hourly) Incr(hour string) {
 }
 
 func (b *bucket) Incr(ref string, hour string) {
+	if b.lock == nil {
+		b.lock = &sync.Mutex{}
+	}
 	b.lock.Lock()
 	h, ok := b.Data[ref]
 	if !ok {
@@ -78,6 +84,9 @@ func (s *Stats) Incr(ref string) {
 		sub = parts[1]
 	}
 	hour := time.Now().Format(hourlyBucketFormat)
+	if s.lock == nil {
+		s.lock = &sync.Mutex{}
+	}
 	s.lock.Lock()
 	b, ok := s.Data[buck]
 	if !ok {
