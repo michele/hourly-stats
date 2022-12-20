@@ -147,6 +147,9 @@ func (h *hourly) stats() *Report {
 		}
 		if t.After(now24) {
 			lastInd := (t.Hour() - currentH) % 24
+			if lastInd < 0 {
+				lastInd *= -1
+			}
 			lastDay[lastInd] = v
 		}
 		hours[t.Hour()] += v
