@@ -155,7 +155,7 @@ func (h *hourly) stats() *Report {
 			continue
 		}
 		if t.After(now24) {
-			lastInd := (t.Hour() - currentH) % 24
+			lastInd := ((t.Hour() - currentH) - 24) % 24
 			if lastInd < 0 {
 				lastInd *= -1
 			}
